@@ -29,5 +29,5 @@ resource "vault_transit_secret_backend_key" "listings" {
   name                  = "listings"
   derived               = true
   convergent_encryption = true
-  deletion_allowed = true
+  deletion_allowed      = true
 }
