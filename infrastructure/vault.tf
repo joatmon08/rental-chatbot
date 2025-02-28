@@ -16,7 +16,7 @@ resource "hcp_vault_cluster_admin_token" "rental" {
   cluster_id = hcp_vault_cluster.rental.cluster_id
 }
 
-resource "vault_mount" "rental" {
+resource "vault_mount" "transit_rental" {
   path                      = var.name
   type                      = "transit"
   description               = "Key ring for rental information"
@@ -25,7 +25,7 @@ resource "vault_mount" "rental" {
 }
 
 resource "vault_transit_secret_backend_key" "listings" {
-  backend               = vault_mount.transit.path
+  backend               = vault_mount.transit_rental.path
   name                  = "listings"
   derived               = true
   convergent_encryption = true
