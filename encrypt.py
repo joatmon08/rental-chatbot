@@ -6,9 +6,10 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 import pandas
-from langchain_community.document_loaders import CSVLoader
+from docling.document_converter import DocumentConverter
 from vardata import S3_BUCKET_NAME
 
+LOCATION = "New York City"
 LISTINGS_FILE = "./data/raw/listings.csv"
 ENCRYPTED_LISTINGS_FILE = "./data/listings.csv"
 MOUNT_POINT = "rentals"
@@ -43,9 +44,9 @@ def encrypt_hostnames():
 
 
 def create_documents():
-    loader = CSVLoader(ENCRYPTED_LISTINGS_FILE)
-    data = loader.load()
-    return data
+    converter = DocumentConverter()
+    result = converter.convert(ENCRYPTED_LISTINGS_FILE)
+    return result.document.export_to_markdown()
 
 
 def upload_file(body, bucket, object):
@@ -60,9 +61,9 @@ def upload_file(body, bucket, object):
 
 def main():
     # encrypt_hostnames()
-    docs = create_documents()
-    for i, doc in enumerate(docs):
-        upload_file(doc.page_content, S3_BUCKET_NAME, f"listings/{i}")
+    doc = create_documents()
+    upload_file(doc, S3_BUCKET_NAME, f"listings/nyc.md")
+        
 
 
 if __name__ == "__main__":

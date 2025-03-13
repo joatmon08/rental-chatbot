@@ -63,7 +63,7 @@ resource "aws_opensearchserverless_access_policy" "rentals" {
         }
       ],
       Principal = [
-        aws_iam_role.bedrock_to_s3.arn,
+        aws_iam_role.bedrock.arn,
         data.aws_caller_identity.current.arn
       ]
     }

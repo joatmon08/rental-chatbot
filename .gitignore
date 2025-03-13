@@ -2,3 +2,4 @@ data/
 vardata.py
 
 .DS_Store
+__pycache__

@@ -1,7 +1,7 @@
 data "aws_caller_identity" "current" {}
 
-resource "aws_iam_policy" "bedrock_to_s3" {
-  name        = "bedrock-${var.name}-s3"
+resource "aws_iam_policy" "bedrock" {
+  name        = "bedrock-${var.name}"
   path        = "/"
   description = "Allow Bedrock Knowledge Base to access S3 bucket with rentals"
 
@@ -50,7 +50,7 @@ resource "aws_iam_policy" "bedrock_to_s3" {
   })
 }
 
-resource "aws_iam_role" "bedrock_to_s3" {
+resource "aws_iam_role" "bedrock" {
   name_prefix = "bedrock-${var.name}-"
 
   assume_role_policy = jsonencode({
@@ -72,9 +72,9 @@ resource "aws_iam_role" "bedrock_to_s3" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "bedrock_s3" {
-  role       = aws_iam_role.bedrock_to_s3.name
-  policy_arn = aws_iam_policy.bedrock_to_s3.arn
+resource "aws_iam_role_policy_attachment" "bedrock" {
+  role       = aws_iam_role.bedrock.name
+  policy_arn = aws_iam_policy.bedrock.arn
 }
 
 data "aws_bedrock_foundation_model" "embedding" {
@@ -83,7 +83,7 @@ data "aws_bedrock_foundation_model" "embedding" {
 
 resource "aws_bedrockagent_knowledge_base" "rentals" {
   name     = var.name
-  role_arn = aws_iam_role.bedrock_to_s3.arn
+  role_arn = aws_iam_role.bedrock.arn
   knowledge_base_configuration {
     vector_knowledge_base_configuration {
       embedding_model_arn = data.aws_bedrock_foundation_model.embedding.model_arn
