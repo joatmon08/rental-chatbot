@@ -37,18 +37,11 @@ resource "vault_mount" "transform_rental" {
   type = "transform"
 }
 
-resource "vault_transform_alphabet" "numerics" {
-  path     = vault_mount.transform_rental.path
-  name     = "numerics"
-  alphabet = "0123456789"
-}
-
 resource "vault_transform_template" "ccn" {
-  path          = vault_transform_alphabet.numerics.path
+  path          = vault_mount.transform_rental.path
   name          = "ccn"
   type          = "regex"
   pattern       = "(\\d{4})(\\d{4})(\\d{4})(\\d{4})"
-  alphabet      = vault_transform_alphabet.numerics.name
   encode_format = "$1$2$3$4"
   decode_formats = {
     "last-four-digits" = "$4"
