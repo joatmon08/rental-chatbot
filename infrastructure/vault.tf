@@ -33,7 +33,7 @@ resource "vault_transit_secret_backend_key" "listings" {
 }
 
 resource "vault_mount" "transform_rental" {
-  path = "${var.name}/transform"
+  path = "transform"
   type = "transform"
 }
 
