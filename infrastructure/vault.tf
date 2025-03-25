@@ -38,10 +38,25 @@ resource "vault_mount" "transform_rental" {
 }
 
 resource "vault_transform_template" "ccn" {
+  path    = vault_mount.transform_rental.path
+  name    = "ccn"
+  type    = "regex"
+  pattern = "(\\d{4})(\\d{4})(\\d{4})\\d{4}"
+}
+
+resource "vault_transform_template" "address" {
+  path    = vault_mount.transform_rental.path
+  name    = "street-address"
+  type    = "regex"
+  pattern = "([A-Za-z0-9]+( [A-Za-z0-9]+)+)"
+}
+
+resource "vault_transform_transformation" "payments_address" {
   path          = vault_mount.transform_rental.path
-  name          = "ccn"
-  type          = "regex"
-  pattern       = "(\\d{4})(\\d{4})(\\d{4})\\d{4}"
+  name          = "payments-address"
+  type          = "tokenization"
+  template      = vault_transform_template.address.name
+  allowed_roles = ["payments"]
 }
 
 resource "vault_transform_transformation" "payments_ccn" {
@@ -56,6 +71,5 @@ resource "vault_transform_transformation" "payments_ccn" {
 resource "vault_transform_role" "payments" {
   path            = vault_mount.transform_rental.path
   name            = "payments"
-  transformations = [vault_transform_transformation.payments_ccn.name]
+  transformations = [vault_transform_transformation.payments_ccn.name, vault_transform_transformation.address.name]
 }
-
