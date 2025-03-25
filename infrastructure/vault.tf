@@ -41,11 +41,7 @@ resource "vault_transform_template" "ccn" {
   path          = vault_mount.transform_rental.path
   name          = "ccn"
   type          = "regex"
-  pattern       = "(\\d{4})(\\d{4})(\\d{4})(\\d{4})"
-  encode_format = "$1$2$3$4"
-  decode_formats = {
-    "last-four-digits" = "$4"
-  }
+  pattern       = "(\\d{4})(\\d{4})(\\d{4})\\d{4}"
 }
 
 resource "vault_transform_transformation" "payments_ccn" {
