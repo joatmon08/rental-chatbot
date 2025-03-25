@@ -20,3 +20,12 @@ provider "vault" {
   token     = hcp_vault_cluster_admin_token.rental.token
   namespace = hcp_vault_cluster.rental.namespace
 }
+
+provider "aws" {
+  region = var.region
+  default_tags {
+    tags = {
+      Repository = "joatmon08/rental-chatbot"
+    }
+  }
+}

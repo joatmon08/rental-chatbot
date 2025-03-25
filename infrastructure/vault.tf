@@ -31,3 +31,42 @@ resource "vault_transit_secret_backend_key" "listings" {
   convergent_encryption = true
   deletion_allowed      = true
 }
+
+resource "vault_mount" "transform_rental" {
+  path = "${var.name}/transform"
+  type = "transform"
+}
+
+resource "vault_transform_alphabet" "numerics" {
+  path     = vault_mount.transform_rental.path
+  name     = "numerics"
+  alphabet = "0123456789"
+}
+
+resource "vault_transform_template" "ccn" {
+  path          = vault_transform_alphabet.numerics.path
+  name          = "ccn"
+  type          = "regex"
+  pattern       = "(\\d{4})(\\d{4})(\\d{4})(\\d{4})"
+  alphabet      = vault_transform_alphabet.numerics.name
+  encode_format = "$1$2$3$4"
+  decode_formats = {
+    "last-four-digits" = "$4"
+  }
+}
+
+resource "vault_transform_transformation" "payments_ccn" {
+  path              = vault_mount.transform_rental.path
+  name              = "payments-ccn"
+  type              = "masking"
+  masking_character = "*"
+  template          = vault_transform_template.ccn.name
+  allowed_roles     = ["payments"]
+}
+
+resource "vault_transform_role" "payments" {
+  path            = vault_mount.transform_rental.path
+  name            = "payments"
+  transformations = [vault_transform_transformation.payments_ccn.name]
+}
+
