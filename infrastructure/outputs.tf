@@ -10,4 +10,3 @@ output "vault_token" {
 output "vault_namespace" {
   value = hcp_vault_cluster.rental.namespace
 }
-
