@@ -46,13 +46,13 @@ resource "vault_transform_template" "ccn" {
 
 resource "vault_transform_template" "address" {
   path    = vault_mount.transform_rental.path
-  name    = "street-address"
+  name    = "address"
   type    = "regex"
   pattern = "([A-Za-z0-9]+( [A-Za-z0-9]+)+)"
 }
 
 locals {
-  address_transformation_name = "payments-address"
+  address_transformation_name = "address"
 }
 
 data "http" "example" {
@@ -82,7 +82,7 @@ data "http" "example" {
 
 resource "vault_transform_transformation" "payments_ccn" {
   path              = vault_mount.transform_rental.path
-  name              = "payments-ccn"
+  name              = "ccn"
   type              = "masking"
   masking_character = "*"
   template          = vault_transform_template.ccn.name
