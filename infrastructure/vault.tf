@@ -30,6 +30,9 @@ resource "vault_kv_secret_v2" "database" {
     {
       username = random_pet.db_username.id,
       password = random_password.db_password.result
+      host     = aws_rds_cluster.postgresql.endpoint
+      port     = aws_rds_cluster.postgresql.port
+      db_name  = aws_rds_cluster.postgresql.database_name
     }
   )
 }
