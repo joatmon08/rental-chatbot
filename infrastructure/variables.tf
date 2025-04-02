@@ -20,3 +20,15 @@ variable "cidr_block" {
   description = "CIDR block for HCP resources"
   default     = "172.25.16.0/20"
 }
+
+variable "postgres_db_version" {
+  type        = string
+  description = "PostgreSQL database version"
+  default     = "16.4"
+}
+
+variable "db_instance_class" {
+  type        = string
+  default     = "db.t3.micro"
+  description = "Database instance class"
+}

@@ -25,3 +25,12 @@ resource "aws_rds_cluster" "postgresql" {
   master_username     = random_pet.db_username.id
   master_password     = random_password.db_password.result
 }
+
+resource "aws_rds_cluster_instance" "postgresql" {
+  count              = 1
+  identifier         = "${var.name}-payments"
+  cluster_identifier = aws_rds_cluster.postgresql.id
+  instance_class     = var.db_instance_class
+  engine             = aws_rds_cluster.postgresql.engine
+  engine_version     = aws_rds_cluster.postgresql.engine_version
+}
