@@ -29,6 +29,6 @@ variable "postgres_db_version" {
 
 variable "db_instance_class" {
   type        = string
-  default     = "db.t3.micro"
+  default     = "db.t4g.medium"
   description = "Database instance class"
 }
