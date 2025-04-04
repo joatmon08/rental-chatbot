@@ -37,20 +37,15 @@ module "vpc" {
   single_nat_gateway   = false
   enable_dns_hostnames = true
 
-  create_database_subnet_group           = true
-  create_database_subnet_route_table     = true
-  create_database_internet_gateway_route = true
-  create_database_nat_gateway_route      = true
-
-  database_subnets = slice(local.subnets, 6, 9)
-  database_subnet_group_tags = {
-    Purpose = "database"
-  }
-
   default_vpc_tags = {
     HCP_Peer = jsonencode([var.cidr_block])
   }
 
+}
+
+resource "aws_db_subnet_group" "rental" {
+  name       = var.name
+  subnet_ids = module.vpc.public_subnets
 }
 
 resource "aws_security_group" "database" {
@@ -84,7 +79,6 @@ resource "aws_vpc_security_group_ingress_rule" "allow_client_traffic" {
   to_port           = 5432
 }
 
-
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   security_group_id = aws_security_group.database.id
   cidr_ipv4         = "0.0.0.0/0"
@@ -99,7 +93,7 @@ resource "aws_rds_cluster" "postgresql" {
   skip_final_snapshot    = true
   master_username        = random_pet.db_username.id
   master_password        = random_password.db_password.result
-  db_subnet_group_name   = module.vpc.database_subnet_group_name
+  db_subnet_group_name   = aws_db_subnet_group.rental.name
   vpc_security_group_ids = [aws_security_group.database.id]
 }
 
