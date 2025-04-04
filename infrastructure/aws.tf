@@ -24,14 +24,18 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.19.0"
 
-  name           = var.name
-  cidr           = var.vpc_cidr_block
-  azs            = data.aws_availability_zones.available.names
-  public_subnets = slice(local.subnets, 0, 3)
+  name            = var.name
+  cidr            = var.vpc_cidr_block
+  azs             = data.aws_availability_zones.available.names
+  public_subnets  = slice(local.subnets, 0, 3)
   private_subnets = slice(local.subnets, 3, 6)
 
-  enable_nat_gateway = true
-  single_nat_gateway = false
+  manage_default_route_table = true
+  default_route_table_tags   = { DefaultRouteTable = true }
+
+  enable_nat_gateway   = true
+  single_nat_gateway   = false
+  enable_dns_hostnames = true
 
   create_database_subnet_group           = true
   create_database_subnet_route_table     = true
@@ -43,6 +47,10 @@ module "vpc" {
     Purpose = "database"
   }
 
+  default_vpc_tags = {
+    HCP_Peer = jsonencode([var.cidr_block])
+  }
+
 }
 
 resource "aws_security_group" "database" {
@@ -51,9 +59,17 @@ resource "aws_security_group" "database" {
   vpc_id      = module.vpc.vpc_id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
+resource "aws_vpc_security_group_ingress_rule" "allow_vpc_traffic" {
   security_group_id = aws_security_group.database.id
   cidr_ipv4         = module.vpc.vpc_cidr_block
+  from_port         = 5432
+  ip_protocol       = "tcp"
+  to_port           = 5432
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_hcp_traffic" {
+  security_group_id = aws_security_group.database.id
+  cidr_ipv4         = var.cidr_block
   from_port         = 5432
   ip_protocol       = "tcp"
   to_port           = 5432
