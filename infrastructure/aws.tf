@@ -75,6 +75,16 @@ resource "aws_vpc_security_group_ingress_rule" "allow_hcp_traffic" {
   to_port           = 5432
 }
 
+resource "aws_vpc_security_group_ingress_rule" "allow_client_traffic" {
+  count             = var.client_cidr_block != null ? 1 : 0
+  security_group_id = aws_security_group.database.id
+  cidr_ipv4         = var.client_cidr_block
+  from_port         = 5432
+  ip_protocol       = "tcp"
+  to_port           = 5432
+}
+
+
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   security_group_id = aws_security_group.database.id
   cidr_ipv4         = "0.0.0.0/0"

@@ -38,3 +38,9 @@ variable "vpc_cidr_block" {
   default     = "10.0.0.0/16"
   description = "CIDR Block for VPC"
 }
+
+variable "client_cidr_block" {
+  type        = string
+  default     = null
+  description = "CIDR Block for client to connect for testing"
+}
