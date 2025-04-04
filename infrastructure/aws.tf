@@ -85,24 +85,24 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
 
-# resource "aws_rds_cluster" "postgresql" {
-#   cluster_identifier     = var.name
-#   engine                 = "aurora-postgresql"
-#   availability_zones     = slice(data.aws_availability_zones.available.names, 0, 3)
-#   database_name          = var.name
-#   skip_final_snapshot    = true
-#   master_username        = random_pet.db_username.id
-#   master_password        = random_password.db_password.result
-#   db_subnet_group_name   = aws_db_subnet_group.rental.name
-#   vpc_security_group_ids = [aws_security_group.database.id]
-# }
+resource "aws_rds_cluster" "postgresql" {
+  cluster_identifier     = var.name
+  engine                 = "aurora-postgresql"
+  availability_zones     = slice(data.aws_availability_zones.available.names, 0, 3)
+  database_name          = var.name
+  skip_final_snapshot    = true
+  master_username        = random_pet.db_username.id
+  master_password        = random_password.db_password.result
+  db_subnet_group_name   = aws_db_subnet_group.rental.name
+  vpc_security_group_ids = [aws_security_group.database.id]
+}
 
-# resource "aws_rds_cluster_instance" "postgresql" {
-#   count               = 1
-#   identifier          = "${var.name}-payments"
-#   cluster_identifier  = aws_rds_cluster.postgresql.id
-#   instance_class      = var.db_instance_class
-#   engine              = aws_rds_cluster.postgresql.engine
-#   engine_version      = aws_rds_cluster.postgresql.engine_version
-#   publicly_accessible = true
-# }
+resource "aws_rds_cluster_instance" "postgresql" {
+  count               = 1
+  identifier          = "${var.name}-payments"
+  cluster_identifier  = aws_rds_cluster.postgresql.id
+  instance_class      = var.db_instance_class
+  engine              = aws_rds_cluster.postgresql.engine
+  engine_version      = aws_rds_cluster.postgresql.engine_version
+  publicly_accessible = true
+}
