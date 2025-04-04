@@ -32,3 +32,9 @@ variable "db_instance_class" {
   default     = "db.t4g.medium"
   description = "Database instance class"
 }
+
+variable "vpc_cidr_block" {
+  type        = string
+  default     = "10.0.0.0/16"
+  description = "CIDR Block for VPC"
+}
