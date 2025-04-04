@@ -104,10 +104,11 @@ resource "aws_rds_cluster" "postgresql" {
 }
 
 resource "aws_rds_cluster_instance" "postgresql" {
-  count              = 1
-  identifier         = "${var.name}-payments"
-  cluster_identifier = aws_rds_cluster.postgresql.id
-  instance_class     = var.db_instance_class
-  engine             = aws_rds_cluster.postgresql.engine
-  engine_version     = aws_rds_cluster.postgresql.engine_version
+  count               = 1
+  identifier          = "${var.name}-payments"
+  cluster_identifier  = aws_rds_cluster.postgresql.id
+  instance_class      = var.db_instance_class
+  engine              = aws_rds_cluster.postgresql.engine
+  engine_version      = aws_rds_cluster.postgresql.engine_version
+  publicly_accessible = true
 }
