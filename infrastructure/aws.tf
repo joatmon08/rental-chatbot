@@ -83,7 +83,6 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
 
 resource "aws_rds_cluster" "postgresql" {
   cluster_identifier     = var.name
-  engine_mode            = "serverless"
   engine                 = "aurora-postgresql"
   availability_zones     = slice(data.aws_availability_zones.available.names, 0, 3)
   database_name          = var.name
