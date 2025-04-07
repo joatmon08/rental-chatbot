@@ -87,7 +87,7 @@ resource "vault_transform_template" "ccn" {
   path    = vault_mount.transform_rental.path
   name    = "ccn"
   type    = "regex"
-  pattern = "(\\d{9,12})\\d{4}"
+  pattern = "(\\d{8,12})\\d{4}"
 }
 
 resource "vault_transform_template" "address" {
