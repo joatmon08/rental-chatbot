@@ -86,16 +86,16 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
 }
 
 resource "aws_rds_cluster" "postgresql" {
-  cluster_identifier     = var.name
-  engine                 = "aurora-postgresql"
-  availability_zones     = slice(data.aws_availability_zones.available.names, 0, 3)
-  database_name          = var.name
-  skip_final_snapshot    = true
-  master_username        = random_pet.db_username.id
-  master_password        = random_password.db_password.result
-  db_subnet_group_name   = aws_db_subnet_group.rental.name
-  vpc_security_group_ids = [aws_security_group.database.id]
-  enable_http_endpoint   = true
+  cluster_identifier          = var.name
+  engine                      = "aurora-postgresql"
+  availability_zones          = slice(data.aws_availability_zones.available.names, 0, 3)
+  database_name               = var.name
+  skip_final_snapshot         = true
+  master_username             = random_pet.db_username.id
+  manage_master_user_password = true
+  db_subnet_group_name        = aws_db_subnet_group.rental.name
+  vpc_security_group_ids      = [aws_security_group.database.id]
+  enable_http_endpoint        = true
 }
 
 resource "aws_rds_cluster_instance" "postgresql" {
