@@ -29,7 +29,7 @@ variable "postgres_db_version" {
 
 variable "db_instance_class" {
   type        = string
-  default     = "db.t4g.medium"
+  default     = "db.r5.large"
   description = "Database instance class"
 }
 
