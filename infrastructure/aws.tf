@@ -95,7 +95,7 @@ resource "aws_rds_cluster" "postgresql" {
   master_password        = random_password.db_password.result
   db_subnet_group_name   = aws_db_subnet_group.rental.name
   vpc_security_group_ids = [aws_security_group.database.id]
-  # enable_http_endpoint   = true
+  enable_http_endpoint   = true
 }
 
 resource "aws_rds_cluster_instance" "postgresql" {
