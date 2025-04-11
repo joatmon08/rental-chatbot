@@ -11,11 +11,6 @@ resource "random_pet" "db_username" {
   length = 1
 }
 
-resource "random_password" "db_password" {
-  length           = 16
-  override_special = "!#$"
-}
-
 locals {
   subnets = cidrsubnets(var.vpc_cidr_block, 8, 8, 8, 8, 8, 8, 8, 8, 8)
 }

@@ -41,27 +41,6 @@ resource "hcp_vault_cluster_admin_token" "rental" {
   cluster_id = hcp_vault_cluster.rental.cluster_id
 }
 
-resource "vault_mount" "payments" {
-  path        = "payments"
-  type        = "kv"
-  options     = { version = "2" }
-  description = "KV Version 2 secret engine mount"
-}
-
-resource "vault_kv_secret_v2" "database" {
-  mount = vault_mount.payments.path
-  name  = "database"
-  data_json = jsonencode(
-    {
-      username = random_pet.db_username.id,
-      password = random_password.db_password.result
-      host     = aws_rds_cluster.postgresql.endpoint
-      port     = aws_rds_cluster.postgresql.port
-      db_name  = aws_rds_cluster.postgresql.database_name
-    }
-  )
-}
-
 resource "vault_mount" "transit_rental" {
   path                      = var.name
   type                      = "transit"
