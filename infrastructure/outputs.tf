@@ -10,3 +10,7 @@ output "vault_token" {
 output "vault_namespace" {
   value = hcp_vault_cluster.rental.namespace
 }
+
+output "vault_transit_path" {
+  value = vault_mount.transit_rental.path
+}

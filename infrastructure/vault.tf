@@ -71,7 +71,7 @@ resource "vault_kv_secret_v2" "database" {
 }
 
 resource "vault_mount" "transit_rental" {
-  path                      = var.name
+  path                      = "transit/${var.name}"
   type                      = "transit"
   description               = "Key ring for rental information"
   default_lease_ttl_seconds = 3600
@@ -87,8 +87,13 @@ resource "vault_transit_secret_backend_key" "listings" {
 }
 
 resource "vault_mount" "transform_rental" {
-  path = "transform"
+  path = "transform/${var.name}"
   type = "transform"
+}
+
+locals {
+  address_transformation_name = "address"
+  transform_role              = "bookings"
 }
 
 resource "vault_transform_template" "ccn" {
@@ -100,13 +105,9 @@ resource "vault_transform_template" "ccn" {
 
 resource "vault_transform_template" "address" {
   path    = vault_mount.transform_rental.path
-  name    = "address"
+  name    = local.address_transformation_name
   type    = "regex"
   pattern = "([A-Za-z0-9]+( [A-Za-z0-9]+)+)"
-}
-
-locals {
-  address_transformation_name = "address"
 }
 
 data "http" "example" {
@@ -115,7 +116,7 @@ data "http" "example" {
   method = "POST"
 
   request_body = jsonencode({
-    allowed_roles    = ["payments"]
+    allowed_roles    = [local.transform_role]
     deletion_allowed = true
     convergent       = true
   })
@@ -140,11 +141,11 @@ resource "vault_transform_transformation" "payments_ccn" {
   type              = "masking"
   masking_character = "42"
   template          = vault_transform_template.ccn.name
-  allowed_roles     = ["payments"]
+  allowed_roles     = [local.transform_role]
 }
 
-resource "vault_transform_role" "payments" {
+resource "vault_transform_role" "bookings" {
   path            = vault_mount.transform_rental.path
-  name            = "payments"
+  name            = local.transform_role
   transformations = [vault_transform_transformation.payments_ccn.name, local.address_transformation_name]
 }
