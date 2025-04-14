@@ -111,7 +111,7 @@ resource "vault_transform_template" "address" {
 }
 
 data "http" "example" {
-  url = "${hcp_vault_cluster.rental.vault_public_endpoint_url}/v1/transform/transformations/tokenization/${local.address_transformation_name}"
+  url = "${hcp_vault_cluster.rental.vault_public_endpoint_url}/v1/${vault_mount.transform_rental.path}/transformations/tokenization/${local.address_transformation_name}"
 
   method = "POST"
 
