@@ -44,7 +44,7 @@ provider "postgresql" {
   port            = aws_rds_cluster.postgresql.port
   database        = aws_rds_cluster.postgresql.database_name
   username        = aws_rds_cluster.postgresql.master_username
-  password        = data.aws_secretsmanager_secret_version.database.secret_string
+  password        = aws_rds_cluster.postgresql.master_password
   sslmode         = "require"
   connect_timeout = 15
 }
@@ -54,8 +54,8 @@ provider "postgresql" {
   host            = aws_rds_cluster.postgresql.endpoint
   port            = aws_rds_cluster.postgresql.port
   database        = aws_rds_cluster.postgresql.database_name
-  username        = postresql_role.bedrock.name
-  password        = ephemeral.aws_secretsmanager_secret_version.bedrock_database.secret_string
+  username        = jsondecode(ephemeral.aws_secretsmanager_secret_version.bedrock_database.secret_string)["username"]
+  password        = jsondecode(ephemeral.aws_secretsmanager_secret_version.bedrock_database.secret_string)["password"]
   sslmode         = "require"
   connect_timeout = 15
 }

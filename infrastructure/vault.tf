@@ -48,21 +48,13 @@ resource "vault_mount" "payments" {
   description = "KV Version 2 secret engine mount"
 }
 
-data "aws_secretsmanager_secret" "database" {
-  arn = aws_rds_cluster.postgresql.master_user_secret.0.secret_arn
-}
-
-data "aws_secretsmanager_secret_version" "database" {
-  secret_id = data.aws_secretsmanager_secret.database.id
-}
-
 resource "vault_kv_secret_v2" "database" {
   mount = vault_mount.payments.path
   name  = "database"
   data_json = jsonencode(
     {
       username = aws_rds_cluster.postgresql.master_username
-      password = data.aws_secretsmanager_secret_version.database.secret_string
+      password = aws_rds_cluster.postgresql.master_password
       host     = aws_rds_cluster.postgresql.endpoint
       port     = aws_rds_cluster.postgresql.port
       db_name  = aws_rds_cluster.postgresql.database_name
