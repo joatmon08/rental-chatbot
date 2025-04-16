@@ -10,9 +10,13 @@ resource "postgresql_schema" "bedrock" {
   name = "bedrock_integration"
 }
 
-ephemeral "random_password" "bedrock_database" {
+resource "random_password" "bedrock_database" {
   length  = 16
   special = false
+}
+
+locals {
+  postgresql_bedrock_user = "bedrock_user"
 }
 
 resource "aws_secretsmanager_secret" "bedrock_database" {
@@ -23,8 +27,8 @@ resource "aws_secretsmanager_secret" "bedrock_database" {
 resource "aws_secretsmanager_secret_version" "bedrock_database" {
   secret_id = aws_secretsmanager_secret.bedrock_database.id
   secret_string_wo = jsonencode({
-    username = "bedrock_user",
-    password = ephemeral.random_password.bedrock_database.result
+    username = local.postgresql_bedrock_user,
+    password = random_password.bedrock_database.result
   })
   secret_string_wo_version = 1
 }
@@ -36,9 +40,9 @@ data "aws_secretsmanager_secret_version" "bedrock_database" {
 resource "postgresql_role" "bedrock" {
   provider = postgresql.admin
 
-  name     = jsondecode(data.aws_secretsmanager_secret_version.bedrock_database.secret_string)["username"]
+  name     = local.postgresql_bedrock_user
+  password = random_password.bedrock_database.result
   login    = true
-  password = jsondecode(data.aws_secretsmanager_secret_version.bedrock_database.secret_string)["password"]
 }
 
 resource "postgresql_grant" "bedrock" {
