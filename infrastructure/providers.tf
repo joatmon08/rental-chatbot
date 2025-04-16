@@ -56,6 +56,7 @@ provider "postgresql" {
   database        = aws_rds_cluster.postgresql.database_name
   username        = aws_rds_cluster.postgresql.master_username
   password        = aws_rds_cluster.postgresql.master_password
+  superuser       = false
   sslmode         = "require"
   connect_timeout = 15
 }
