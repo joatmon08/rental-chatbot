@@ -55,3 +55,13 @@ resource "postgresql_grant" "bedrock" {
   schema      = postgresql_schema.bedrock.name
   privileges  = ["ALL"]
 }
+
+resource "postgresql_grant" "bedrock_public" {
+  provider = postgresql.admin
+
+  database    = aws_rds_cluster.postgresql.database_name
+  object_type = "schema"
+  role        = postgresql_role.bedrock.name
+  schema      = "public"
+  privileges  = ["ALL"]
+}
