@@ -40,9 +40,10 @@ data "aws_secretsmanager_secret_version" "bedrock_database" {
 resource "postgresql_role" "bedrock" {
   provider = postgresql.admin
 
-  name     = local.postgresql_bedrock_user
-  password = random_password.bedrock_database.result
-  login    = true
+  name      = local.postgresql_bedrock_user
+  password  = random_password.bedrock_database.result
+  superuser = false
+  login     = true
 }
 
 resource "postgresql_grant" "bedrock" {
