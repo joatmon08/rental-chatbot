@@ -145,7 +145,7 @@ resource "vault_transform_transformation" "payments_ccn" {
   path              = vault_mount.transform_rental.path
   name              = "ccn"
   type              = "masking"
-  masking_character = "42"
+  masking_character = "*"
   template          = vault_transform_template.ccn.name
   allowed_roles     = [local.transform_role]
 }
