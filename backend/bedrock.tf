@@ -1,5 +1,10 @@
 data "aws_caller_identity" "current" {}
 
+data "vault_kv_secret_v2" "bucket" {
+  mount = "listings"
+  name  = "bucket"
+}
+
 resource "aws_iam_policy" "bedrock" {
   name        = "bedrock-${var.name}"
   path        = "/"
@@ -13,7 +18,7 @@ resource "aws_iam_policy" "bedrock" {
           "s3:ListBucket",
         ],
         Effect   = "Allow",
-        Resource = aws_s3_bucket.rentals.arn,
+        Resource = data.vault_kv_secret_v2.bucket.data.arn,
         Condition = {
           StringEquals = {
             "aws:ResourceAccount" = data.aws_caller_identity.current.account_id
@@ -25,7 +30,7 @@ resource "aws_iam_policy" "bedrock" {
           "s3:GetObject",
         ],
         Effect   = "Allow",
-        Resource = "${aws_s3_bucket.rentals.arn}/*",
+        Resource = "${data.vault_kv_secret_v2.bucket.data.arn}/*",
         Condition = {
           StringEquals = {
             "aws:ResourceAccount" = data.aws_caller_identity.current.account_id
@@ -112,7 +117,37 @@ resource "aws_bedrockagent_data_source" "listings" {
   data_source_configuration {
     type = "S3"
     s3_configuration {
-      bucket_arn = aws_s3_bucket.rentals.arn
+      bucket_arn = data.vault_kv_secret_v2.bucket.data.arn
     }
   }
 }
+
+# resource "awscc_bedrock_knowledge_base" "bookings" {
+#   name        = "${var.name}-bookings"
+#   description = "Database of bookings for vacation rentals"
+#   role_arn    = aws_iam_role.bedrock.arn
+
+#   knowledge_base_configuration = {
+#     type = "SQL"
+#     sql_knowledge_base_configuration = {
+#       type = "REDSHIFT"
+#       redshift_configuration = {
+#         query_engine_configuration = {
+#           serverless_configuration = var.sql_kb_workgroup_arn == null ? null : {
+#             workgroup_arn = var.sql_kb_workgroup_arn
+#             auth_configuration = var.serverless_auth_configuration
+#           }
+#           provisioned_configuration = var.provisioned_config_cluster_identifier == null ? null : {
+#             cluster_identifier = var.provisioned_config_cluster_identifier
+#             auth_configuration = var.provisioned_auth_configuration
+#           } 
+#           type = var.redshift_query_engine_type
+#         }
+#         query_generation_configuration = var.query_generation_configuration
+#         storage_configurations = var.redshift_storage_configuration
+#       }
+
+#     }
+#   }
+
+# }
