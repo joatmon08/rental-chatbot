@@ -49,7 +49,7 @@ resource "vault_mount" "listings" {
 }
 
 resource "vault_kv_secret_v2" "listings" {
-  mount = vault_mount.payments.path
+  mount = vault_mount.listings.path
   name  = "bucket"
   data_json = jsonencode(
     {
