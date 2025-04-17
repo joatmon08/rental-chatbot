@@ -17,7 +17,7 @@ client = hvac.Client(
 )
 
 database_connection = client.secrets.kv.v2.read_secret_version(
-    mount_point="payments", path="database"
+    mount_point="payments", path="bedrock"
 )
 
 conn = psycopg2.connect(
@@ -40,7 +40,8 @@ def get_listing():
 
 def encode_address(address):
     encode_response = client.secrets.transform.encode(
-        role_name="payments",
+        mount_point="transform/rentals",
+        role_name="bookings",
         value=address,
         transformation="address",
     )
@@ -48,8 +49,8 @@ def encode_address(address):
 
 def encode_credit_card_number(ccn):
     encode_response = client.secrets.transform.encode(
-        mount_point="transform",
-        role_name="payments",
+        mount_point="transform/rentals",
+        role_name="bookings",
         value=ccn,
         transformation="ccn",
     )
@@ -69,6 +70,19 @@ def generate_data(number_of_records):
         booking["number_of_nights"] = random.randint(1, 30)
         bookings.append(booking)
     return bookings
+
+
+def set_up_database():
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS bedrock_integration.bedrock_kb (id uuid PRIMARY KEY, embedding vector(1024), chunks text, metadata json);"""
+    )
+    cursor.execute(
+        """CREATE INDEX ON bedrock_integration.bedrock_kb USING hnsw (embedding vector_cosine_ops);"""
+    )
+    cursor.execute(
+        """CREATE INDEX ON bedrock_integration.bedrock_kb USING hnsw (embedding vector_cosine_ops) WITH (ef_construction=256);"""
+    )
+    conn.commit()
 
 
 def add_to_database(bookings):
@@ -97,6 +111,7 @@ def add_to_database(bookings):
 
 def main():
     bookings = generate_data(NUMBER_OF_BOOKINGS)
+    set_up_database()
     add_to_database(bookings)
 
 

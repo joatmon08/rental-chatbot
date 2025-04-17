@@ -11,7 +11,7 @@ resource "vault_kv_secret_v2" "listings" {
   data_json = jsonencode(
     {
       arn  = aws_s3_bucket.rentals.arn
-      name = aws_s3_bucket.rentals.name
+      name = aws_s3_bucket.rentals.bucket
     }
   )
 }
