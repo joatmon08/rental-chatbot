@@ -41,6 +41,23 @@ resource "hcp_vault_cluster_admin_token" "rental" {
   cluster_id = hcp_vault_cluster.rental.cluster_id
 }
 
+resource "vault_mount" "listings" {
+  path        = "listings"
+  type        = "kv"
+  options     = { version = "2" }
+  description = "KV Version 2 secret engine mount"
+}
+
+resource "vault_kv_secret_v2" "listings" {
+  mount = vault_mount.payments.path
+  name  = "bucket"
+  data_json = jsonencode(
+    {
+      arn = aws_s3_bucket.rentals.arn
+    }
+  )
+}
+
 resource "vault_mount" "payments" {
   path        = "payments"
   type        = "kv"
