@@ -9,11 +9,9 @@ import pandas
 from botocore.exceptions import ClientError
 from langchain_community.document_loaders import CSVLoader
 
-from vardata import S3_BUCKET_NAME
-
 LISTINGS_FILE = "./data/raw/listings.csv"
 ENCRYPTED_LISTINGS_FILE = "./data/listings.csv"
-MOUNT_POINT = "rentals"
+MOUNT_POINT = "transit/rentals"
 KEY_NAME = "listings"
 CONTEXT = json.dumps({"location": "New York City", "field": "host_name"})
 
@@ -23,6 +21,11 @@ client = hvac.Client(
     namespace=os.getenv("VAULT_NAMESPACE"),
 )
 
+bucket = client.secrets.kv.v2.read_secret_version(
+    mount_point="listings", path="bucket"
+)
+
+bucket_name = bucket["data"]["data"]["name"]
 
 def encrypt_payload(payload):
     try:
@@ -61,10 +64,10 @@ def upload_file(body, bucket, object):
 
 
 def main():
-    # encrypt_hostnames()
+    encrypt_hostnames()
     docs = create_documents()
     for i, doc in enumerate(docs):
-        upload_file(doc.page_content, S3_BUCKET_NAME, f"listings/{i}")
+        upload_file(doc.page_content, bucket_name, f"listings/{i}")
 
 
 if __name__ == "__main__":
