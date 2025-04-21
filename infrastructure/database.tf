@@ -40,51 +40,6 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
 
-data "aws_bedrock_foundation_model" "embedding" {
-  model_id = var.titan_model_id
-}
-
-resource "aws_iam_policy" "bedrock" {
-  name        = "bedrock-rds-${var.name}"
-  path        = "/"
-  description = "Allow Bedrock Knowledge Base to access RDS"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "bedrock:InvokeModel"
-        ],
-        Effect   = "Allow",
-        Resource = data.aws_bedrock_foundation_model.embedding.model_arn,
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role" "bedrock" {
-  name_prefix = "bedrock-rds-${var.name}-"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "rds.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "bedrock" {
-  role       = aws_iam_role.bedrock.name
-  policy_arn = aws_iam_policy.bedrock.arn
-}
-
 ephemeral "random_password" "admin_database" {
   length  = 16
   special = false
@@ -119,7 +74,6 @@ resource "aws_rds_cluster" "postgresql" {
   db_subnet_group_name   = aws_db_subnet_group.rental.name
   vpc_security_group_ids = [aws_security_group.database.id]
   enable_http_endpoint   = true
-  iam_roles              = [aws_iam_role.bedrock.arn]
 }
 
 resource "aws_rds_cluster_instance" "postgresql" {

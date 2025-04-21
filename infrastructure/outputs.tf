@@ -18,3 +18,7 @@ output "vault_transit_path" {
 output "bedrock_database_credentials_arn" {
   value = aws_secretsmanager_secret.bedrock_database.arn
 }
+
+output "bedrock_database_name" {
+  value = aws_rds_cluster.postgresql.database_name
+}
