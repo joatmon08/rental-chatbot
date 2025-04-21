@@ -14,3 +14,7 @@ output "vault_namespace" {
 output "vault_transit_path" {
   value = vault_mount.transit_rental.path
 }
+
+output "bedrock_database_credentials_arn" {
+  value = aws_secretsmanager_secret.bedrock_database.arn
+}
