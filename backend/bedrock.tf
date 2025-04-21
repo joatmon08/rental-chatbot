@@ -177,35 +177,3 @@ resource "aws_bedrockagent_data_source" "listings" {
     }
   }
 }
-
-resource "awscc_bedrock_knowledge_base" "bookings" {
-  name        = "${var.name}-bookings"
-  description = "Knowledge base for bookings database"
-  role_arn    = aws_iam_role.bedrock.arn
-
-  knowledge_base_configuration = {
-    type = "SQL"
-    vector_knowledge_base_configuration = {
-      embedding_model_arn = data.aws_bedrock_foundation_model.embedding.model_arn
-    }
-  }
-
-  storage_configuration = {
-    type = "RDS"
-    rds_configuration = {
-      credentials_secret_arn = local.database_secrets_arn
-      database_name          = local.database_name
-      resource_arn           = local.database_cluster_arn
-      table_name             = var.table_name
-
-      field_mapping = {
-        metadata_field    = var.metadata_field
-        primary_key_field = var.primary_key_field
-        text_field        = var.text_field
-        vector_field      = var.vector_field
-      }
-    }
-  }
-
-  tags = var.tags
-}
