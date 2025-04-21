@@ -22,3 +22,7 @@ output "bedrock_database_credentials_arn" {
 output "bedrock_database_name" {
   value = aws_rds_cluster.postgresql.database_name
 }
+
+output "bedrock_database_arn" {
+  value = aws_rds_cluster.postgresql.arn
+}
