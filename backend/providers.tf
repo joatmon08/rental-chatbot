@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.89.0"
     }
+    awscc = {
+      source  = "hashicorp/awscc"
+      version = "~> 1.37.0"
+    }
     opensearch = {
       source  = "opensearch-project/opensearch"
       version = "~> 2.3.1"
@@ -15,12 +19,14 @@ terraform {
   }
 }
 
+provider "awscc" {
+  region = var.region
+}
+
 provider "aws" {
   region = var.region
   default_tags {
-    tags = {
-      Repository = "joatmon08/rental-chatbot"
-    }
+    tags = var.tags
   }
 }
 

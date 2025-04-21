@@ -8,7 +8,26 @@ data "vault_kv_secret_v2" "bucket" {
 resource "aws_iam_policy" "bedrock" {
   name        = "bedrock-${var.name}"
   path        = "/"
-  description = "Allow Bedrock Knowledge Base to access S3 bucket with rentals"
+  description = "Allow Bedrock Knowledge Base to invoke model"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "bedrock:InvokeModel"
+        ],
+        Effect   = "Allow",
+        Resource = data.aws_bedrock_foundation_model.embedding.model_arn,
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "bedrock_s3" {
+  name        = "bedrock-s3-${var.name}"
+  path        = "/"
+  description = "Allow Bedrock Knowledge Base to access S3 bucket"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -43,13 +62,40 @@ resource "aws_iam_policy" "bedrock" {
         ],
         Effect   = "Allow",
         Resource = aws_opensearchserverless_collection.rentals.arn,
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "bedrock_rds" {
+  name        = "bedrock-rds-${var.name}"
+  path        = "/"
+  description = "Allow Bedrock Knowledge Base to access RDS database"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "rds:DescribeDBClusters",
+        ],
+        Effect   = "Allow",
+        Resource = local.database_cluster_arn
       },
       {
         Action = [
-          "bedrock:InvokeModel"
+          "rds-data:BatchExecuteStatement",
+          "rds-data:ExecuteStatement"
         ],
         Effect   = "Allow",
-        Resource = data.aws_bedrock_foundation_model.embedding.model_arn,
+        Resource = local.database_cluster_arn
+      },
+      {
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ],
+        Effect   = "Allow",
+        Resource = local.database_secrets_arn
       }
     ]
   })
@@ -80,6 +126,16 @@ resource "aws_iam_role" "bedrock" {
 resource "aws_iam_role_policy_attachment" "bedrock" {
   role       = aws_iam_role.bedrock.name
   policy_arn = aws_iam_policy.bedrock.arn
+}
+
+resource "aws_iam_role_policy_attachment" "bedrock_s3" {
+  role       = aws_iam_role.bedrock.name
+  policy_arn = aws_iam_policy.bedrock_s3.arn
+}
+
+resource "aws_iam_role_policy_attachment" "bedrock_rds" {
+  role       = aws_iam_role.bedrock.name
+  policy_arn = aws_iam_policy.bedrock_rds.arn
 }
 
 data "aws_bedrock_foundation_model" "embedding" {
@@ -122,32 +178,34 @@ resource "aws_bedrockagent_data_source" "listings" {
   }
 }
 
-# resource "awscc_bedrock_knowledge_base" "bookings" {
-#   name        = "${var.name}-bookings"
-#   description = "Database of bookings for vacation rentals"
-#   role_arn    = aws_iam_role.bedrock.arn
+resource "awscc_bedrock_knowledge_base" "bookings" {
+  name        = "${var.name}-bookings"
+  description = "Knowledge base for bookings database"
+  role_arn    = aws_iam_role.bedrock.arn
 
-#   knowledge_base_configuration = {
-#     type = "SQL"
-#     sql_knowledge_base_configuration = {
-#       type = "REDSHIFT"
-#       redshift_configuration = {
-#         query_engine_configuration = {
-#           serverless_configuration = var.sql_kb_workgroup_arn == null ? null : {
-#             workgroup_arn = var.sql_kb_workgroup_arn
-#             auth_configuration = var.serverless_auth_configuration
-#           }
-#           provisioned_configuration = var.provisioned_config_cluster_identifier == null ? null : {
-#             cluster_identifier = var.provisioned_config_cluster_identifier
-#             auth_configuration = var.provisioned_auth_configuration
-#           } 
-#           type = var.redshift_query_engine_type
-#         }
-#         query_generation_configuration = var.query_generation_configuration
-#         storage_configurations = var.redshift_storage_configuration
-#       }
+  knowledge_base_configuration = {
+    type = "SQL"
+    vector_knowledge_base_configuration = {
+      embedding_model_arn = data.aws_bedrock_foundation_model.embedding.model_arn
+    }
+  }
 
-#     }
-#   }
+  storage_configuration = {
+    type = "RDS"
+    rds_configuration = {
+      credentials_secret_arn = local.database_secrets_arn
+      database_name          = local.database_name
+      resource_arn           = local.database_cluster_arn
+      table_name             = var.table_name
 
-# }
+      field_mapping = {
+        metadata_field    = var.metadata_field
+        primary_key_field = var.primary_key_field
+        text_field        = var.text_field
+        vector_field      = var.vector_field
+      }
+    }
+  }
+
+  tags = var.tags
+}
