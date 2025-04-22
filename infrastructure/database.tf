@@ -63,6 +63,32 @@ data "aws_secretsmanager_secret_version" "admin_database" {
   secret_id = aws_secretsmanager_secret_version.admin_database.secret_id
 }
 
+resource "aws_rds_cluster_parameter_group" "postgresql" {
+  name        = var.name
+  family      = "aurora-postgresql16"
+  description = "RDS default cluster parameter group"
+
+  parameter {
+    name  = "rds.logical_replication"
+    value = "1"
+  }
+
+  parameter {
+    name  = "aurora.enhanced_logical_replication"
+    value = "1"
+  }
+
+  parameter {
+    name  = "aurora.logical_replication_backup"
+    value = "0"
+  }
+
+  parameter {
+    name  = "aurora.logical_replication_globaldb"
+    value = "0"
+  }
+}
+
 resource "aws_rds_cluster" "postgresql" {
   cluster_identifier     = var.name
   engine                 = "aurora-postgresql"
@@ -77,11 +103,12 @@ resource "aws_rds_cluster" "postgresql" {
 }
 
 resource "aws_rds_cluster_instance" "postgresql" {
-  count               = 1
-  identifier          = "${var.name}-payments"
-  cluster_identifier  = aws_rds_cluster.postgresql.id
-  instance_class      = var.db_instance_class
-  engine              = aws_rds_cluster.postgresql.engine
-  engine_version      = aws_rds_cluster.postgresql.engine_version
-  publicly_accessible = true
+  count                   = 1
+  identifier              = "${var.name}-payments"
+  cluster_identifier      = aws_rds_cluster.postgresql.id
+  instance_class          = var.db_instance_class
+  engine                  = aws_rds_cluster.postgresql.engine
+  engine_version          = aws_rds_cluster.postgresql.engine_version
+  publicly_accessible     = true
+  db_parameter_group_name = aws_rds_cluster_parameter_group.postgresql.name
 }
