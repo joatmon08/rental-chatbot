@@ -72,19 +72,6 @@ def generate_data(number_of_records):
     return bookings
 
 
-def set_up_database():
-    cursor.execute(
-        """CREATE TABLE IF NOT EXISTS bedrock_integration.bedrock_kb (id uuid PRIMARY KEY, embedding vector(1024), chunks text, metadata json);"""
-    )
-    cursor.execute(
-        """CREATE INDEX ON bedrock_integration.bedrock_kb USING hnsw (embedding vector_cosine_ops) WITH (ef_construction=256);"""
-    )
-    cursor.execute(
-        """CREATE INDEX ON bedrock_integration.bedrock_kb USING gin (to_tsvector('simple', chunks));"""
-    )
-    conn.commit()
-
-
 def add_to_database(bookings):
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS bookings(
