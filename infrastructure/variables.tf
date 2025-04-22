@@ -44,9 +44,3 @@ variable "client_cidr_block" {
   default     = null
   description = "CIDR Block for client to connect for testing"
 }
-
-variable "titan_model_id" {
-  type        = string
-  description = "Model ID for Bedrock embeddings"
-  default     = "amazon.titan-embed-text-v2:0"
-}

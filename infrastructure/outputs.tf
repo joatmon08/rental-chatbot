@@ -15,10 +15,6 @@ output "vault_transit_path" {
   value = vault_mount.transit_rental.path
 }
 
-output "bedrock_database_credentials_arn" {
-  value = aws_secretsmanager_secret.bedrock_database.arn
-}
-
 output "bedrock_database_name" {
   value = aws_rds_cluster.postgresql.database_name
 }

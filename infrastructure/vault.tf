@@ -37,20 +37,6 @@ resource "vault_kv_secret_v2" "database" {
   )
 }
 
-resource "vault_kv_secret_v2" "database_bedrock" {
-  mount = vault_mount.payments.path
-  name  = "bedrock"
-  data_json = jsonencode(
-    {
-      username = postgresql_role.bedrock.name
-      password = random_password.bedrock_database.result
-      host     = aws_rds_cluster.postgresql.endpoint
-      port     = aws_rds_cluster.postgresql.port
-      db_name  = aws_rds_cluster.postgresql.database_name
-    }
-  )
-}
-
 resource "vault_mount" "transit_rental" {
   path                      = "transit/${var.name}"
   type                      = "transit"
