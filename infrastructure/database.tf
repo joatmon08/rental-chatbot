@@ -69,46 +69,50 @@ resource "aws_rds_cluster_parameter_group" "postgresql" {
   description = "RDS default cluster parameter group"
 
   parameter {
-    name  = "rds.logical_replication"
-    value = "1"
+    apply_method = "pending-reboot"
+    name         = "rds.logical_replication"
+    value        = "1"
   }
 
   parameter {
-    name  = "aurora.enhanced_logical_replication"
-    value = "1"
+    apply_method = "pending-reboot"
+    name         = "aurora.enhanced_logical_replication"
+    value        = "1"
   }
 
   parameter {
-    name  = "aurora.logical_replication_backup"
-    value = "0"
+    apply_method = "pending-reboot"
+    name         = "aurora.logical_replication_backup"
+    value        = "0"
   }
 
   parameter {
-    name  = "aurora.logical_replication_globaldb"
-    value = "0"
+    apply_method = "pending-reboot"
+    name         = "aurora.logical_replication_globaldb"
+    value        = "0"
   }
 }
 
 resource "aws_rds_cluster" "postgresql" {
-  cluster_identifier     = var.name
-  engine                 = "aurora-postgresql"
-  availability_zones     = slice(data.aws_availability_zones.available.names, 0, 3)
-  database_name          = var.name
-  skip_final_snapshot    = true
-  master_username        = jsondecode(data.aws_secretsmanager_secret_version.admin_database.secret_string)["username"]
-  master_password        = jsondecode(data.aws_secretsmanager_secret_version.admin_database.secret_string)["password"]
-  db_subnet_group_name   = aws_db_subnet_group.rental.name
-  vpc_security_group_ids = [aws_security_group.database.id]
-  enable_http_endpoint   = true
+  cluster_identifier              = var.name
+  engine                          = "aurora-postgresql"
+  availability_zones              = slice(data.aws_availability_zones.available.names, 0, 3)
+  database_name                   = var.name
+  skip_final_snapshot             = true
+  master_username                 = jsondecode(data.aws_secretsmanager_secret_version.admin_database.secret_string)["username"]
+  master_password                 = jsondecode(data.aws_secretsmanager_secret_version.admin_database.secret_string)["password"]
+  db_subnet_group_name            = aws_db_subnet_group.rental.name
+  vpc_security_group_ids          = [aws_security_group.database.id]
+  enable_http_endpoint            = true
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.postgresql.name
 }
 
 resource "aws_rds_cluster_instance" "postgresql" {
-  count                   = 1
-  identifier              = "${var.name}-payments"
-  cluster_identifier      = aws_rds_cluster.postgresql.id
-  instance_class          = var.db_instance_class
-  engine                  = aws_rds_cluster.postgresql.engine
-  engine_version          = aws_rds_cluster.postgresql.engine_version
-  publicly_accessible     = true
-  db_parameter_group_name = aws_rds_cluster_parameter_group.postgresql.name
+  count               = 1
+  identifier          = "${var.name}-payments"
+  cluster_identifier  = aws_rds_cluster.postgresql.id
+  instance_class      = var.db_instance_class
+  engine              = aws_rds_cluster.postgresql.engine
+  engine_version      = aws_rds_cluster.postgresql.engine_version
+  publicly_accessible = true
 }
