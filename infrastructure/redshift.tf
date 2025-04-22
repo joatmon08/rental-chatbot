@@ -24,3 +24,22 @@ resource "aws_rds_integration" "rentals_redshift" {
   target_arn       = aws_redshiftserverless_namespace.rentals.arn
   data_filter      = "include: ${aws_rds_cluster.postgresql.database_name}.public.bookings"
 }
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_redshiftserverless_resource_policy" "rentals" {
+  resource_arn = aws_redshiftserverless_namespace.rentals.arn
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        AWS = [data.aws_caller_identity.current.account_id]
+      }
+      Action = [
+        "redshift:AuthorizeInboundIntegration",
+        "redshift:CreateInboundIntegration",
+      ]
+    }]
+  })
+}
