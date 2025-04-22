@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/http"
       version = "~> 3.4.5"
     }
+    postgresql = {
+      source  = "cyrilgdn/postgresql"
+      version = "~> 1.25.0"
+    }
   }
 }
 
@@ -29,7 +33,19 @@ provider "aws" {
   region = var.region
   default_tags {
     tags = {
-      Repository = "joatmon08/rental-chatbot//infrastructure"
+      Repository = "joatmon08/rental-chatbot"
     }
   }
+}
+
+provider "postgresql" {
+  alias           = "admin"
+  host            = aws_rds_cluster.postgresql.endpoint
+  port            = aws_rds_cluster.postgresql.port
+  database        = aws_rds_cluster.postgresql.database_name
+  username        = aws_rds_cluster.postgresql.master_username
+  password        = aws_rds_cluster.postgresql.master_password
+  superuser       = false
+  sslmode         = "require"
+  connect_timeout = 15
 }
