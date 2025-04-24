@@ -22,10 +22,10 @@ provider "aws" {
   }
 }
 
-provider "opensearch" {
-  url         = ""
-  healthcheck = false
-}
+# provider "opensearch" {
+#   url         = ""
+#   healthcheck = false
+# }
 
 data "terraform_remote_state" "infrastructure" {
   backend = "remote"
