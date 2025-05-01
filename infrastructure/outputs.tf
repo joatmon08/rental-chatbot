@@ -15,10 +15,10 @@ output "vault_transit_path" {
   value = vault_mount.transit_rental.path
 }
 
-output "bedrock_database_name" {
-  value = aws_rds_cluster.postgresql.database_name
-}
+# output "bedrock_database_name" {
+#   value = aws_rds_cluster.postgresql.database_name
+# }
 
-output "bedrock_database_arn" {
-  value = aws_rds_cluster.postgresql.arn
-}
+# output "bedrock_database_arn" {
+#   value = aws_rds_cluster.postgresql.arn
+# }

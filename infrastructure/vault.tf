@@ -1,41 +1,41 @@
-resource "vault_mount" "listings" {
-  path        = "listings"
-  type        = "kv"
-  options     = { version = "2" }
-  description = "KV Version 2 secret engine mount"
-}
+# resource "vault_mount" "listings" {
+#   path        = "listings"
+#   type        = "kv"
+#   options     = { version = "2" }
+#   description = "KV Version 2 secret engine mount"
+# }
 
-resource "vault_kv_secret_v2" "listings" {
-  mount = vault_mount.listings.path
-  name  = "bucket"
-  data_json = jsonencode(
-    {
-      arn  = aws_s3_bucket.rentals.arn
-      name = aws_s3_bucket.rentals.bucket
-    }
-  )
-}
+# resource "vault_kv_secret_v2" "listings" {
+#   mount = vault_mount.listings.path
+#   name  = "bucket"
+#   data_json = jsonencode(
+#     {
+#       arn  = aws_s3_bucket.rentals.arn
+#       name = aws_s3_bucket.rentals.bucket
+#     }
+#   )
+# }
 
-resource "vault_mount" "payments" {
-  path        = "payments"
-  type        = "kv"
-  options     = { version = "2" }
-  description = "KV Version 2 secret engine mount"
-}
+# resource "vault_mount" "payments" {
+#   path        = "payments"
+#   type        = "kv"
+#   options     = { version = "2" }
+#   description = "KV Version 2 secret engine mount"
+# }
 
-resource "vault_kv_secret_v2" "database" {
-  mount = vault_mount.payments.path
-  name  = "database"
-  data_json = jsonencode(
-    {
-      username = aws_rds_cluster.postgresql.master_username
-      password = aws_rds_cluster.postgresql.master_password
-      host     = aws_rds_cluster.postgresql.endpoint
-      port     = aws_rds_cluster.postgresql.port
-      db_name  = aws_rds_cluster.postgresql.database_name
-    }
-  )
-}
+# resource "vault_kv_secret_v2" "database" {
+#   mount = vault_mount.payments.path
+#   name  = "database"
+#   data_json = jsonencode(
+#     {
+#       username = aws_rds_cluster.postgresql.master_username
+#       password = aws_rds_cluster.postgresql.master_password
+#       host     = aws_rds_cluster.postgresql.endpoint
+#       port     = aws_rds_cluster.postgresql.port
+#       db_name  = aws_rds_cluster.postgresql.database_name
+#     }
+#   )
+# }
 
 resource "vault_mount" "transit_rental" {
   path                      = "transit/${var.name}"
