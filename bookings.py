@@ -2,13 +2,13 @@ import os
 import random
 
 import pandas
-import psycopg2
 import hvac
 
 from faker import Faker
 
 NUMBER_OF_BOOKINGS = 1000
 ENCRYPTED_LISTINGS_FILE = "./data/listings.csv"
+BOOKINGS_FILE = "./data/bookings.csv"
 
 client = hvac.Client(
     url=os.environ["VAULT_ADDR"],
@@ -16,21 +16,8 @@ client = hvac.Client(
     namespace=os.getenv("VAULT_NAMESPACE"),
 )
 
-database_connection = client.secrets.kv.v2.read_secret_version(
-    mount_point="payments", path="bedrock"
-)
-
-conn = psycopg2.connect(
-    database=database_connection["data"]["data"]["db_name"],
-    user=database_connection["data"]["data"]["username"],
-    password=database_connection["data"]["data"]["password"],
-    host=database_connection["data"]["data"]["host"],
-    port=database_connection["data"]["data"]["port"],
-)
-
 dataframe = pandas.read_csv(ENCRYPTED_LISTINGS_FILE)
 fake = Faker()
-cursor = conn.cursor()
 
 
 def get_listing():
@@ -47,6 +34,7 @@ def encode_address(address):
     )
     return encode_response['data']['encoded_value']
 
+
 def encode_credit_card_number(ccn):
     encode_response = client.secrets.transform.encode(
         mount_point="transform/rentals",
@@ -55,6 +43,7 @@ def encode_credit_card_number(ccn):
         transformation="ccn",
     )
     return encode_response['data']['encoded_value']
+
 
 def generate_data(number_of_records):
     bookings = []
@@ -72,34 +61,14 @@ def generate_data(number_of_records):
     return bookings
 
 
-def add_to_database(bookings):
-    cursor.execute(
-        """CREATE TABLE IF NOT EXISTS bookings(
-        id SERIAL NOT NULL,
-        name varchar(255) not null,
-        listing_id bigint not null,
-        credit_card varchar(20) not null,
-        billing_street_address varchar(255) not null,
-        billing_city varchar(255) not null,
-        billing_zip_code int not null,
-        start_date date not null,
-        number_of_nights smallint not null
-        );"""
-    )
-
-    sql = """INSERT into bookings(
-                name, listing_id, credit_card,
-                billing_street_address, billing_city, billing_zip_code,
-                start_date, number_of_nights)
-             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-    cursor.executemany(sql, [list(booking.values()) for booking in bookings])
-    conn.commit()
+def create_csv(bookings):
+    df = pandas.DataFrame(bookings)
+    df.to_csv(BOOKINGS_FILE, index=False)
 
 
 def main():
     bookings = generate_data(NUMBER_OF_BOOKINGS)
-    set_up_database()
-    add_to_database(bookings)
+    create_csv(bookings)
 
 
 if __name__ == "__main__":
