@@ -2,4 +2,4 @@
 
 ollama serve &
 ollama list
-ollama pull granite3.2:8b
+ollama pull granite3.3:8b

@@ -21,7 +21,7 @@ fake = Faker()
 
 
 def get_listing():
-    record = dataframe["id"].sample(n=1)
+    record = dataframe["listing_id"].sample(n=1)
     return record.values[0].item()
 
 

@@ -1,13 +1,9 @@
 import base64
 import json
-import logging
 import os
 
-import boto3
 import hvac
 import pandas
-from botocore.exceptions import ClientError
-from langchain_community.document_loaders import CSVLoader
 
 LISTINGS_FILE = "./data/raw/listings.csv"
 ENCRYPTED_LISTINGS_FILE = "./data/listings.csv"
@@ -21,11 +17,6 @@ client = hvac.Client(
     namespace=os.getenv("VAULT_NAMESPACE"),
 )
 
-bucket = client.secrets.kv.v2.read_secret_version(
-    mount_point="listings", path="bucket"
-)
-
-bucket_name = bucket["data"]["data"]["name"]
 
 def encrypt_payload(payload):
     try:
@@ -42,32 +33,14 @@ def encrypt_payload(payload):
 
 
 def encrypt_hostnames():
-    dataframe = pandas.read_csv(LISTINGS_FILE)
+    dataframe = pandas.read_csv(LISTINGS_FILE, nrows=1000)
     dataframe["host_name"] = dataframe["host_name"].apply(lambda x: encrypt_payload(x))
+    dataframe = dataframe.rename(columns={"id": "listing_id"})
     dataframe.to_csv(ENCRYPTED_LISTINGS_FILE, index=False)
-
-
-def create_documents():
-    loader = CSVLoader(ENCRYPTED_LISTINGS_FILE)
-    data = loader.load()
-    return data
-
-
-def upload_file(body, bucket, object):
-    s3_client = boto3.client("s3")
-    try:
-        s3_client.put_object(Body=body, Bucket=bucket, Key=object)
-    except ClientError as e:
-        logging.error(e)
-        return False
-    return True
 
 
 def main():
     encrypt_hostnames()
-    docs = create_documents()
-    for i, doc in enumerate(docs):
-        upload_file(doc.page_content, bucket_name, f"listings/{i}")
 
 
 if __name__ == "__main__":

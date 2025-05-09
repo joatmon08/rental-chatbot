@@ -77,7 +77,7 @@ resource "vault_transform_template" "address" {
   pattern = "([A-Za-z0-9]+( [A-Za-z0-9]+)+)"
 }
 
-data "http" "example" {
+data "http" "address" {
   url = "${hcp_vault_cluster.rental.vault_public_endpoint_url}/v1/${vault_mount.transform_rental.path}/transformations/tokenization/${local.address_transformation_name}"
 
   method = "POST"
